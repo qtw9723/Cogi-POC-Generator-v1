@@ -36,7 +36,7 @@ export function useResults() {
   }
 
   const deleteResult = async (id) => {
-    await request(API_ENDPOINTS.RESULTS + `/${id}`, {
+    await request(`${API_ENDPOINTS.RESULTS}?id=${id}`, {
       method: 'DELETE'
     })
     setResults(results.filter(r => r.id !== id))

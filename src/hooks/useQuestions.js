@@ -32,7 +32,7 @@ export function useQuestions() {
   }
 
   const updateQuestion = async (id, updates) => {
-    const data = await request(`${API_ENDPOINTS.ADMIN_QUESTIONS}/${id}`, {
+    const data = await request(`${API_ENDPOINTS.ADMIN_QUESTIONS}?id=${id}`, {
       method: 'PATCH',
       body: updates
     })
@@ -41,7 +41,7 @@ export function useQuestions() {
   }
 
   const deleteQuestion = async (id) => {
-    await request(`${API_ENDPOINTS.ADMIN_QUESTIONS}/${id}`, {
+    await request(`${API_ENDPOINTS.ADMIN_QUESTIONS}?id=${id}`, {
       method: 'DELETE'
     })
     setQuestions(questions.filter(q => q.id !== id))

@@ -32,15 +32,16 @@ export function useReferences() {
   }
 
   const learnRules = async (id) => {
-    const data = await request(API_ENDPOINTS.LEARN_RULES(id), {
-      method: 'POST'
+    const data = await request(API_ENDPOINTS.LEARN_RULES, {
+      method: 'POST',
+      body: { reference_id: id }
     })
     setReferences(references.map(r => r.id === id ? { ...r, template_status: 'completed' } : r))
     return data
   }
 
   const deleteReference = async (id) => {
-    await request(`${API_ENDPOINTS.ADMIN_REFERENCES}/${id}`, {
+    await request(`${API_ENDPOINTS.ADMIN_REFERENCES}?id=${id}`, {
       method: 'DELETE'
     })
     setReferences(references.filter(r => r.id !== id))
