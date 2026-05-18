@@ -1,18 +1,38 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuestions } from '../hooks/useQuestions'
-import { useReferences } from '../hooks/useReferences'
 import { useResults } from '../hooks/useResults'
+import { useApi } from '../hooks/useApi'
+import { API_ENDPOINTS } from '../lib/constants'
 
 export default function QuestionnaireForm() {
   const { questions, loading: qLoading } = useQuestions()
-  const { references, loading: rLoading } = useReferences()
   const { createResult, loading: gLoading } = useResults()
+  const { request } = useApi()
   const navigate = useNavigate()
 
+  const [references, setReferences] = useState([])
+  const [rLoading, setRLoading] = useState(true)
   const [selectedRefId, setSelectedRefId] = useState('')
   const [responses, setResponses] = useState({})
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchReferences()
+  }, [])
+
+  const fetchReferences = async () => {
+    try {
+      const data = await request(API_ENDPOINTS.ADMIN_REFERENCES)
+      setReferences(data)
+    } catch (err) {
+      // 실패해도 빈 배열로 계속 진행
+      console.log('References not available:', err.message)
+      setReferences([])
+    } finally {
+      setRLoading(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
