@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
 
   const login = (id, password) => {
     if (id === ADMIN_ID && password === ADMIN_PW) {
-      const token = btoa(`${ADMIN_ID}:${Date.now()}`)
+      const token = btoa(JSON.stringify({ role: 'master' }))
       localStorage.setItem('adminToken', token)
       setIsAdmin(true)
       return true
