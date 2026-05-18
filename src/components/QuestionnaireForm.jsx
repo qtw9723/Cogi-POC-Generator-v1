@@ -37,18 +37,6 @@ export default function QuestionnaireForm() {
       <h1 className="text-3xl font-bold mb-8">챗봇 JSON 생성기</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-semibold mb-2">레퍼런스 선택 *</label>
-          <select value={selectedRefId} onChange={(e) => setSelectedRefId(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-            <option value="">-- 선택하세요 --</option>
-            {references.map(r => (
-              <option key={r.id} value={r.id}>
-                {r.name} {r.template_status === 'pending' ? '(학습 필요)' : '✓'}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {error && <div className="p-4 bg-red-50 border border-red-200 rounded text-red-700">{error}</div>}
 
         {questions.map(q => (
