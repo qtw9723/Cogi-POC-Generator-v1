@@ -114,7 +114,7 @@ serve(async (req: Request) => {
       })
     }
 
-    console.log("[admin-questions] Token validation passed")
+    console.log("[admin-questions] Token validation passed (v2)")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
