@@ -9,6 +9,10 @@ export function useQuestions() {
   const { request } = useApi()
   const hasLoadedRef = useRef(false)
 
+  // Debug: Track how many times this hook is instantiated
+  const instanceId = useRef(Math.random()).current
+  console.log(`[useQuestions] Hook instantiated #${instanceId.toString().slice(2, 6)}, hasLoaded=${hasLoadedRef.current}`)
+
   const fetchQuestions = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -29,6 +33,8 @@ export function useQuestions() {
     // Prevent multiple calls using ref - ensure this runs only once
     if (hasLoadedRef.current) return
     hasLoadedRef.current = true
+
+    console.log('[useQuestions] Fetching questions...')
 
     // Create inline async function to avoid dependency issues
     const load = async () => {

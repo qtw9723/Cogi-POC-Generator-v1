@@ -9,6 +9,10 @@ export function useReferences() {
   const { request } = useApi()
   const hasLoadedRef = useRef(false)
 
+  // Debug: Track how many times this hook is instantiated
+  const instanceId = useRef(Math.random()).current
+  console.log(`[useReferences] Hook instantiated #${instanceId.toString().slice(2, 6)}, hasLoaded=${hasLoadedRef.current}`)
+
   const fetchReferences = useCallback(async () => {
     setLoading(true)
     setError(null)

@@ -8,6 +8,7 @@ export function useApi() {
     setLoading(true)
     setError(null)
     const { method = 'GET', body = null } = options
+    console.log(`[useApi] ${method} ${endpoint}`)
     try {
       const adminToken = localStorage.getItem('adminToken')
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
