@@ -1,26 +1,33 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useApi } from './useApi'
 import { API_ENDPOINTS } from '../lib/constants'
 
 export function useResults() {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { request } = useApi()
+  const hasLoadedRef = useRef(false)
 
-  useEffect(() => {
-    fetchResults()
-  }, [])
-
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     try {
+      setLoading(true)
+      setError(null)
       const data = await request(API_ENDPOINTS.RESULTS)
       setResults(data)
     } catch (err) {
       console.error('Failed to fetch results:', err)
+      setError(err.message)
     } finally {
       setLoading(false)
     }
-  }
+  }, [request])
+
+  useEffect(() => {
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
+    fetchResults()
+  }, [fetchResults])
 
   const getResultById = async (id) => {
     return await request(API_ENDPOINTS.RESULT_DETAIL(id))

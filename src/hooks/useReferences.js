@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useApi } from './useApi'
 import { API_ENDPOINTS } from '../lib/constants'
 
@@ -7,12 +7,9 @@ export function useReferences() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { request } = useApi()
+  const hasLoadedRef = useRef(false)
 
-  useEffect(() => {
-    fetchReferences()
-  }, [])
-
-  const fetchReferences = async () => {
+  const fetchReferences = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -30,7 +27,13 @@ export function useReferences() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [request])
+
+  useEffect(() => {
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
+    fetchReferences()
+  }, [fetchReferences])
 
   const uploadReference = async (name, jsonData) => {
     const data = await request(API_ENDPOINTS.ADMIN_REFERENCES, {

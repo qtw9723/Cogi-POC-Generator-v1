@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useApi } from './useApi'
 import { API_ENDPOINTS } from '../lib/constants'
 
@@ -7,12 +7,9 @@ export function useQuestions() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { request } = useApi()
+  const hasLoadedRef = useRef(false)
 
-  useEffect(() => {
-    fetchQuestions()
-  }, [])
-
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -24,7 +21,13 @@ export function useQuestions() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [request])
+
+  useEffect(() => {
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
+    fetchQuestions()
+  }, [fetchQuestions])
 
   const createQuestion = async (question) => {
     const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS, {
