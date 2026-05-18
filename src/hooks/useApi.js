@@ -23,8 +23,7 @@ export function useApi() {
     try {
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anonKey}`,
-        'x-admin-token': adminToken || ''
+        'Authorization': `Bearer ${anonKey}`
       }
 
       const response = await fetch(url, {
