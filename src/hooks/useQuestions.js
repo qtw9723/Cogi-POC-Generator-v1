@@ -13,7 +13,7 @@ export function useQuestions() {
 
   const fetchQuestions = async () => {
     try {
-      const data = await request(API_ENDPOINTS.QUESTIONS)
+      const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS)
       setQuestions(data)
     } catch (err) {
       console.error('Failed to fetch questions:', err)
