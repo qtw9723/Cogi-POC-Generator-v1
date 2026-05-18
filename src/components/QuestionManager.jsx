@@ -19,7 +19,7 @@ export default function QuestionManager() {
 
   useEffect(() => {
     if (!isAdmin) navigate('/admin')
-  }, [isAdmin])
+  }, [isAdmin, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

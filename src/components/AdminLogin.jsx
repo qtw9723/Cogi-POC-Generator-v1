@@ -6,12 +6,12 @@ export default function AdminLogin() {
   const [id, setId] = useState('')
   const [pw, setPw] = useState('')
   const [error, setError] = useState('')
-  const { isAdmin, login } = useAuth()
+  const { isAdmin, loading, login } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (isAdmin) navigate('/admin/questions')
-  }, [isAdmin])
+    if (!loading && isAdmin) navigate('/admin/questions')
+  }, [isAdmin, loading, navigate])
 
   const handleSubmit = (e) => {
     e.preventDefault()
