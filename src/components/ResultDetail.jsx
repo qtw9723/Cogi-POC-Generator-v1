@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useResults } from '../hooks/useResults'
+import { useResults } from '../context/ResultsContext'
 
 export default function ResultDetail() {
   const { id } = useParams()

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuestions } from '../hooks/useQuestions'
-import { useResults } from '../hooks/useResults'
+import { useQuestions } from '../context/QuestionsContext'
+import { useResults } from '../context/ResultsContext'
 
 export default function QuestionnaireForm() {
   const { questions, loading: qLoading } = useQuestions()

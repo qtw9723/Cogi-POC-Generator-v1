@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useResults } from '../hooks/useResults'
+import { useResults } from '../context/ResultsContext'
 import { useAuth } from '../context/AuthContext'
 
 export default function ResultList() {

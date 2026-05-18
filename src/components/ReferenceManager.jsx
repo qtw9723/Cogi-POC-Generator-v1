@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useReferences } from '../hooks/useReferences'
+import { useReferences } from '../context/ReferencesContext'
 
 export default function ReferenceManager() {
   const { isAdmin, logout } = useAuth()

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useQuestions } from '../hooks/useQuestions'
+import { useQuestions } from '../context/QuestionsContext'
 import { INPUT_TYPES } from '../lib/constants'
 
 export default function QuestionManager() {
