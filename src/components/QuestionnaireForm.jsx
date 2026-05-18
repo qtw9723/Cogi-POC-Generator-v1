@@ -1,27 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuestions } from '../hooks/useQuestions'
-import { useReferences } from '../hooks/useReferences'
 import { useResults } from '../hooks/useResults'
 
 export default function QuestionnaireForm() {
   const { questions, loading: qLoading } = useQuestions()
-  const { references, loading: rLoading } = useReferences()
   const { createResult, loading: gLoading } = useResults()
   const navigate = useNavigate()
 
-  const [selectedRefId, setSelectedRefId] = useState('')
   const [responses, setResponses] = useState({})
   const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-
-    if (!selectedRefId) {
-      setError('레퍼런스를 선택해주세요')
-      return
-    }
 
     const missing = questions.filter(q => q.is_required && !responses[q.id]).map(q => q.text)
     if (missing.length > 0) {
@@ -30,14 +22,15 @@ export default function QuestionnaireForm() {
     }
 
     try {
-      const result = await createResult(responses, selectedRefId)
+      // 최신 학습된 reference는 백엔드에서 자동으로 찾음
+      const result = await createResult(responses)
       navigate(`/results/${result.id}`)
     } catch (err) {
       setError(err.message)
     }
   }
 
-  if (qLoading || rLoading) return <div className="text-center py-12">로딩 중...</div>
+  if (qLoading) return <div className="text-center py-12">로딩 중...</div>
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-6">

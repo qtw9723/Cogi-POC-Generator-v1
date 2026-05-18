@@ -26,19 +26,38 @@ serve(async (req: Request) => {
 
   try {
     const { reference_id, responses } = await req.json()
-    if (!reference_id || !responses) {
-      throw new Error("reference_id and responses required")
+    if (!responses) {
+      throw new Error("responses required")
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    const { data: reference, error: refError } = await supabase
-      .from("cogi_references")
-      .select("*")
-      .eq("id", reference_id)
-      .single()
+    let reference
+    let refError
+
+    if (reference_id) {
+      // If reference_id is provided, use it
+      const result = await supabase
+        .from("cogi_references")
+        .select("*")
+        .eq("id", reference_id)
+        .single()
+      reference = result.data
+      refError = result.error
+    } else {
+      // If reference_id is not provided, find the latest learned reference
+      const result = await supabase
+        .from("cogi_references")
+        .select("*")
+        .eq("template_status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()
+      reference = result.data
+      refError = result.error
+    }
 
     if (refError || !reference) throw new Error("Reference not found")
 
