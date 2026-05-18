@@ -62,6 +62,10 @@ serve(async (req: Request) => {
     const id = url.searchParams.get("id")
     const adminToken = url.searchParams.get("token") || req.headers.get("x-admin-token")
 
+    console.log("[admin-questions] URL:", req.url)
+    console.log("[admin-questions] Query token:", url.searchParams.get("token")?.substring(0, 20))
+    console.log("[admin-questions] Final adminToken:", adminToken?.substring(0, 20))
+
     if (req.method === "GET") {
       // GET은 인증 불필요 (public read) - anonKey 사용
       const supabase = createClient(supabaseUrl, supabaseAnonKey)
@@ -94,16 +98,17 @@ serve(async (req: Request) => {
     // Validate token format
     try {
       const decoded = JSON.parse(atob(adminToken))
+      console.log("[admin-questions] Decoded token:", JSON.stringify(decoded))
       if (decoded.role !== "master") {
         console.log("[admin-questions] Invalid role:", decoded.role)
-        return new Response(JSON.stringify({ error: "Unauthorized - invalid role" }), {
+        return new Response(JSON.stringify({ error: "Unauthorized - invalid role", got: decoded.role }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 401,
         })
       }
     } catch (e) {
-      console.log("[admin-questions] Failed to validate token:", e)
-      return new Response(JSON.stringify({ error: "Unauthorized - invalid token" }), {
+      console.log("[admin-questions] Failed to validate token:", String(e))
+      return new Response(JSON.stringify({ error: "Unauthorized - invalid token format", details: String(e).substring(0, 50) }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       })
