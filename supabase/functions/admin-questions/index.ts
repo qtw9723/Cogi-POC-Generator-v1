@@ -20,21 +20,19 @@ const verifyToken = (authHeader: string | null): boolean => {
 }
 
 const verifyAdminToken = (headers: Headers): boolean => {
-  // x-admin-token 헤더 사용 (Supabase JWT 검증 우회)
+  // x-admin-token 헤더: base64 encoded {"role":"master"}
   const adminToken = headers.get("x-admin-token")
-  console.log("[verifyAdminToken] adminToken:", adminToken)
-  if (!adminToken) {
-    console.log("[verifyAdminToken] No admin token found")
-    return false
-  }
+  console.log("[verifyAdminToken] adminToken present:", !!adminToken)
+  if (!adminToken) return false
+
   try {
     const decoded = JSON.parse(atob(adminToken))
-    console.log("[verifyAdminToken] Decoded token:", decoded)
+    console.log("[verifyAdminToken] decoded:", JSON.stringify(decoded))
     const isValid = decoded.role === "master"
-    console.log("[verifyAdminToken] Is valid:", isValid)
+    console.log("[verifyAdminToken] role check passed:", isValid)
     return isValid
   } catch (e) {
-    console.log("[verifyAdminToken] Failed to decode:", e.message)
+    console.error("[verifyAdminToken] decode error:", e)
     return false
   }
 }
