@@ -24,14 +24,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    const token = req.headers.get("authorization")
-    if (!verifyToken(token)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      })
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -40,6 +32,7 @@ serve(async (req: Request) => {
     const id = url.searchParams.get("id")
 
     if (req.method === "GET") {
+      // GET은 인증 불필요 (public read)
       const { data, error } = await supabase
         .from("cogi_references")
         .select("*")
@@ -48,6 +41,15 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
+      })
+    }
+
+    // POST/DELETE는 인증 필요
+    const token = req.headers.get("authorization")
+    if (!verifyToken(token)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
       })
     }
 
