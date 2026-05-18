@@ -14,8 +14,12 @@ export function useApi() {
 
       const headers = {
         'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${adminToken || anonKey}`
+        'apikey': anonKey
+      }
+
+      // Add Authorization header only for authenticated requests
+      if (adminToken) {
+        headers['Authorization'] = `Bearer ${adminToken}`
       }
 
       const response = await fetch(endpoint, {
