@@ -22,11 +22,19 @@ const verifyToken = (authHeader: string | null): boolean => {
 const verifyAdminToken = (headers: Headers): boolean => {
   // x-admin-token 헤더 사용 (Supabase JWT 검증 우회)
   const adminToken = headers.get("x-admin-token")
-  if (!adminToken) return false
+  console.log("[verifyAdminToken] adminToken:", adminToken)
+  if (!adminToken) {
+    console.log("[verifyAdminToken] No admin token found")
+    return false
+  }
   try {
     const decoded = JSON.parse(atob(adminToken))
-    return decoded.role === "master"
-  } catch {
+    console.log("[verifyAdminToken] Decoded token:", decoded)
+    const isValid = decoded.role === "master"
+    console.log("[verifyAdminToken] Is valid:", isValid)
+    return isValid
+  } catch (e) {
+    console.log("[verifyAdminToken] Failed to decode:", e.message)
     return false
   }
 }
@@ -59,12 +67,15 @@ serve(async (req: Request) => {
     }
 
     // POST/PATCH/DELETE는 인증 필요 (x-admin-token 헤더 사용)
+    console.log("[admin-questions] Verifying admin token for", req.method)
     if (!verifyAdminToken(req.headers)) {
+      console.log("[admin-questions] Admin token verification failed")
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       })
     }
+    console.log("[admin-questions] Admin token verified successfully")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
