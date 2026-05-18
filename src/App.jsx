@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 
 export default function App() {
@@ -30,6 +30,9 @@ export default function App() {
           </div>
         </div>
       </nav>
+      <main>
+        <Outlet />
+      </main>
     </div>
   )
 }
