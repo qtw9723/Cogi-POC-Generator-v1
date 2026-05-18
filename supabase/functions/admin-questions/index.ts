@@ -82,7 +82,10 @@ serve(async (req: Request) => {
 
     if (!adminToken) {
       console.log("[admin-questions] No admin token provided")
-      return new Response(JSON.stringify({ error: "Unauthorized - no token" }), {
+      return new Response(JSON.stringify({
+        error: "Unauthorized - no token",
+        debug: { hasQueryToken: !!url.searchParams.get("token"), hasHeaderToken: !!req.headers.get("x-admin-token") }
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       })
