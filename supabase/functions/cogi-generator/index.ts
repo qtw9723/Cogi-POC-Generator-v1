@@ -26,6 +26,8 @@ serve(async (req: Request) => {
 
   try {
     const { reference_id, responses } = await req.json()
+    console.log("[cogi-generator] reference_id:", reference_id)
+    console.log("[cogi-generator] responses:", JSON.stringify(responses).substring(0, 100))
     if (!responses) {
       throw new Error("responses required")
     }
@@ -59,7 +61,10 @@ serve(async (req: Request) => {
       refError = result.error
     }
 
-    if (refError || !reference) throw new Error("Reference not found")
+    if (refError || !reference) {
+      console.error("[cogi-generator] Reference error:", refError)
+      throw new Error(`Reference not found${refError ? ': ' + refError.message : ''}`)
+    }
 
     let generatedJson = JSON.parse(JSON.stringify(reference.json_data))
 
