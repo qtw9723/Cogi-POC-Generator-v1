@@ -1,14 +1,24 @@
-import { Link, useLocation, Outlet } from 'react-router-dom'
+import { Link, useLocation, Outlet, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
 export default function App() {
-  const { isAdmin, logout } = useAuth()
+  const { isAdmin, loading, logout } = useAuth()
   const location = useLocation()
 
   const isAdminRoute = location.pathname.startsWith('/admin')
 
   // Debug: Track renders
   console.log('[App] Rendering, isAdmin=', isAdmin, 'location=', location.pathname)
+
+  // Redirect to /admin if trying to access admin routes without auth
+  if (isAdminRoute && !loading && !isAdmin && location.pathname !== '/admin') {
+    return <Navigate to="/admin" replace />
+  }
+
+  // Redirect to questions page if already authenticated and accessing login page
+  if (location.pathname === '/admin' && !loading && isAdmin) {
+    return <Navigate to="/admin/questions" replace />
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

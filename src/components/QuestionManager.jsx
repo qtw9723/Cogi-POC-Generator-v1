@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useQuestions } from '../context/QuestionsContext'
 import { INPUT_TYPES } from '../lib/constants'
@@ -16,10 +15,6 @@ export default function QuestionManager() {
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState({ text: '', input_type: INPUT_TYPES.TEXT, is_required: true, options: [], order_index: 0 })
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (!isAdmin) navigate('/admin')
-  }, [isAdmin])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

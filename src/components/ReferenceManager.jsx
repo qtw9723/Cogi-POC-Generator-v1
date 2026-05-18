@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useReferences } from '../context/ReferencesContext'
 
@@ -13,10 +12,6 @@ export default function ReferenceManager() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [learning, setLearning] = useState(null)
-
-  useEffect(() => {
-    if (!isAdmin) navigate('/admin')
-  }, [isAdmin])
 
   const handleUpload = async (e) => {
     e.preventDefault()
