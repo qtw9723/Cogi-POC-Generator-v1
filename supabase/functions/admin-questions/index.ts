@@ -43,6 +43,17 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Debug: 모든 헤더 로깅
+    console.log("[admin-questions] Request method:", req.method)
+    console.log("[admin-questions] All headers:")
+    for (const [key, value] of req.headers) {
+      if (key === "authorization") {
+        console.log(`  ${key}: ${value.substring(0, 20)}...`)
+      } else {
+        console.log(`  ${key}: ${value}`)
+      }
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
