@@ -34,15 +34,21 @@ serve(async (req: Request) => {
     }
 
     // Use service role key for all write operations (temporarily no auth check)
+    console.log("[admin-questions] Creating supabase client with service key")
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     if (req.method === "POST") {
       const body = await req.json()
+      console.log("[admin-questions] Inserting question:", body)
       const { data, error } = await supabase
         .from("questions")
         .insert([body])
         .select()
-      if (error) throw error
+      if (error) {
+        console.error("[admin-questions] Insert error:", error)
+        throw error
+      }
+      console.log("[admin-questions] Insert successful")
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 201,
