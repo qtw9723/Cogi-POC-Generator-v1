@@ -16,7 +16,12 @@ export function useReferences() {
       const data = await request(API_ENDPOINTS.ADMIN_REFERENCES)
       setReferences(data)
     } catch (err) {
-      console.error('Failed to fetch references:', err)
+      // If unauthorized (not admin), silently fail - references are optional for non-admin users
+      if (err.message.includes('Unauthorized') || err.message.includes('401')) {
+        console.log('Admin references not available (not authenticated)')
+      } else {
+        console.error('Failed to fetch references:', err)
+      }
     } finally {
       setLoading(false)
     }

@@ -26,7 +26,7 @@ export function useApi() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'API request failed')
+        throw new Error(errorData.message || errorData.error || 'API request failed')
       }
 
       const data = await response.json()
