@@ -16,27 +16,19 @@ export function useApi() {
 
       const headers = {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${anonKey}`
       }
 
-      // GET 요청: Authorization 헤더 사용 (anonKey)
-      // POST/PATCH/DELETE: x-admin-token 헤더 사용 (adminToken)
-      if (method === 'GET') {
-        headers['Authorization'] = `Bearer ${anonKey}`
-        console.log(`[useApi] Using anonKey for GET request`)
-      } else {
+      // POST/PATCH/DELETE는 추가로 x-admin-token 헤더 필요
+      if (method !== 'GET') {
         if (adminToken) {
           headers['x-admin-token'] = adminToken
           console.log(`[useApi] Using x-admin-token for ${method} request`)
-          try {
-            const decoded = JSON.parse(atob(adminToken))
-            console.log(`[useApi] Decoded admin token:`, decoded)
-          } catch (e) {
-            console.log(`[useApi] Failed to decode admin token:`, e.message)
-          }
         } else {
           console.warn(`[useApi] No adminToken found for ${method} request`)
         }
       }
+      console.log(`[useApi] Headers:`, { ...headers, Authorization: headers.Authorization?.substring(0, 20) + '...' })
 
       const response = await fetch(endpoint, {
         method,
