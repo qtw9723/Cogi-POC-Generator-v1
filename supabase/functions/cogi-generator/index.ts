@@ -63,7 +63,10 @@ serve(async (req: Request) => {
 
     if (refError || !reference) {
       console.error("[cogi-generator] Reference error:", refError)
-      throw new Error(`Reference not found${refError ? ': ' + refError.message : ''}`)
+      return new Response(JSON.stringify({ error: "Reference not found. Please create and learn a reference first." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      })
     }
 
     let generatedJson = JSON.parse(JSON.stringify(reference.json_data))
