@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useResults } from '../hooks/useResults'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../context/AuthContext'
 
 export default function ResultList() {
   const { results, loading, deleteResult } = useResults()
