@@ -1,6 +1,6 @@
 {
   "name": "cogi-poc-generator-v1",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cogi Dialog JSON Generator",
   "type": "module",
   "scripts": {
