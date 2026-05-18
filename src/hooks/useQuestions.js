@@ -26,12 +26,28 @@ export function useQuestions() {
   }, [request])
 
   useEffect(() => {
-    // Prevent multiple calls using ref
-    if (hasLoadedRef.current === true) return
+    // Prevent multiple calls using ref - ensure this runs only once
+    if (hasLoadedRef.current) return
     hasLoadedRef.current = true
 
-    fetchQuestions()
-  }, [fetchQuestions, request])
+    // Create inline async function to avoid dependency issues
+    const load = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS)
+        setQuestions(data)
+      } catch (err) {
+        console.error('Failed to fetch questions:', err)
+        setError(err.message)
+        setQuestions([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [])
 
   const createQuestion = async (question) => {
     const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS, {

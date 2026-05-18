@@ -32,10 +32,31 @@ export function useReferences() {
   }, [request])
 
   useEffect(() => {
-    if (hasLoadedRef.current === true) return
+    if (hasLoadedRef.current) return
     hasLoadedRef.current = true
-    fetchReferences()
-  }, [fetchReferences, request])
+
+    const load = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await request(API_ENDPOINTS.ADMIN_REFERENCES)
+        setReferences(data)
+      } catch (err) {
+        if (err.message.includes('Unauthorized') || err.message.includes('401')) {
+          console.log('Admin references not available (not authenticated)')
+          setError(null)
+        } else {
+          console.error('Failed to fetch references:', err)
+          setError(err.message)
+        }
+        setReferences([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [])
 
   const uploadReference = async (name, jsonData) => {
     const data = await request(API_ENDPOINTS.ADMIN_REFERENCES, {

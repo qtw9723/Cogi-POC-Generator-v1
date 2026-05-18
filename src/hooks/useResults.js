@@ -26,10 +26,26 @@ export function useResults() {
   }, [request])
 
   useEffect(() => {
-    if (hasLoadedRef.current === true) return
+    if (hasLoadedRef.current) return
     hasLoadedRef.current = true
-    fetchResults()
-  }, [fetchResults, request])
+
+    const load = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await request(API_ENDPOINTS.RESULTS)
+        setResults(data)
+      } catch (err) {
+        console.error('Failed to fetch results:', err)
+        setError(err.message)
+        setResults([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [])
 
   const getResultById = async (id) => {
     return await request(API_ENDPOINTS.RESULT_DETAIL(id))
