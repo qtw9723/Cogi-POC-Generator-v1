@@ -8,29 +8,26 @@ export function useApi() {
     setLoading(true)
     setError(null)
     const { method = 'GET', body = null } = options
-    console.log(`[useApi] ${method} ${endpoint}`)
-    try {
-      const adminToken = localStorage.getItem('adminToken')
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-      console.log(`[useApi] adminToken exists: ${!!adminToken}, length: ${adminToken?.length || 0}`)
+    const adminToken = localStorage.getItem('adminToken')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+    // 관리자 토큰이 있으면 쿼리 파라미터로 추가
+    let url = endpoint
+    if (method !== 'GET' && adminToken) {
+      const separator = endpoint.includes('?') ? '&' : '?'
+      url = `${endpoint}${separator}token=${encodeURIComponent(adminToken)}`
+    }
+
+    console.log(`[useApi] ${method} ${endpoint}${adminToken && method !== 'GET' ? ' (with token)' : ''}`)
+
+    try {
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anonKey}`
+        'Authorization': `Bearer ${anonKey}`,
+        'x-admin-token': adminToken || ''
       }
 
-      // POST/PATCH/DELETE는 추가로 x-admin-token 헤더 필요
-      if (method !== 'GET') {
-        if (adminToken) {
-          headers['x-admin-token'] = adminToken
-          console.log(`[useApi] Using x-admin-token for ${method} request`)
-        } else {
-          console.warn(`[useApi] No adminToken found for ${method} request`)
-        }
-      }
-      console.log(`[useApi] Headers:`, { ...headers, Authorization: headers.Authorization?.substring(0, 20) + '...' })
-
-      const response = await fetch(endpoint, {
+      const response = await fetch(url, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null

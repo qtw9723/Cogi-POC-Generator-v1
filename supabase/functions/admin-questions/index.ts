@@ -60,6 +60,7 @@ serve(async (req: Request) => {
 
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
+    const adminToken = url.searchParams.get("token") || req.headers.get("x-admin-token")
 
     if (req.method === "GET") {
       // GET은 인증 불필요 (public read) - anonKey 사용
@@ -75,19 +76,36 @@ serve(async (req: Request) => {
       })
     }
 
-    // POST/PATCH/DELETE는 인증 필요 (x-admin-token 헤더 사용)
-    // TODO: 검증 재활성화
+    // POST/PATCH/DELETE는 인증 필요 (token query param 또는 x-admin-token 헤더)
     console.log("[admin-questions] Checking admin token for", req.method)
-    const hasAdminToken = !!req.headers.get("x-admin-token")
-    console.log("[admin-questions] Has x-admin-token:", hasAdminToken)
+    console.log("[admin-questions] adminToken:", adminToken)
 
-    if (!hasAdminToken) {
-      console.log("[admin-questions] No x-admin-token provided")
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    if (!adminToken) {
+      console.log("[admin-questions] No admin token provided")
+      return new Response(JSON.stringify({ error: "Unauthorized - no token" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       })
     }
+
+    // Validate token format
+    try {
+      const decoded = JSON.parse(atob(adminToken))
+      if (decoded.role !== "master") {
+        console.log("[admin-questions] Invalid role:", decoded.role)
+        return new Response(JSON.stringify({ error: "Unauthorized - invalid role" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        })
+      }
+    } catch (e) {
+      console.log("[admin-questions] Failed to validate token:", e)
+      return new Response(JSON.stringify({ error: "Unauthorized - invalid token" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      })
+    }
+
     console.log("[admin-questions] Token validation passed")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
