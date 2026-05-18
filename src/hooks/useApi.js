@@ -11,11 +11,11 @@ export function useApi() {
       const { method = 'GET', body = null } = options
       const adminToken = localStorage.getItem('adminToken')
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      const token = adminToken || anonKey
 
       const headers = {
         'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${adminToken || anonKey}`
+        'Authorization': `Bearer ${token}`
       }
 
       const response = await fetch(endpoint, {
