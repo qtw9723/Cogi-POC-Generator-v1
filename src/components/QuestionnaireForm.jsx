@@ -1,47 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuestions } from '../hooks/useQuestions'
+import { useReferences } from '../hooks/useReferences'
 import { useResults } from '../hooks/useResults'
 
 export default function QuestionnaireForm() {
   const { questions, loading: qLoading } = useQuestions()
+  const { references, loading: rLoading } = useReferences()
   const { createResult, loading: gLoading } = useResults()
   const navigate = useNavigate()
 
-  const [references, setReferences] = useState([])
-  const [rLoading, setRLoading] = useState(true)
   const [selectedRefId, setSelectedRefId] = useState('')
   const [responses, setResponses] = useState({})
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    fetchReferences()
-  }, [])
-
-  const fetchReferences = async () => {
-    try {
-      // 공개 references 엔드포인트 사용
-      const baseUrl = import.meta.env.VITE_SUPABASE_URL
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-      const response = await fetch(`${baseUrl}/functions/v1/references`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${anonKey}`
-        }
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-      const data = await response.json()
-      setReferences(data)
-    } catch (err) {
-      // 실패해도 빈 배열로 계속 진행
-      console.log('References not available:', err.message)
-      setReferences([])
-    } finally {
-      setRLoading(false)
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
