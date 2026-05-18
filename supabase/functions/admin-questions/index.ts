@@ -8,6 +8,14 @@ const corsHeaders = {
 }
 
 serve(async (req: Request) => {
+  // RADICAL TEST: Return a unique response to verify deployment
+  if (req.url.includes("test")) {
+    return new Response(JSON.stringify({ testResponse: "deployment works v3" }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    })
+  }
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
