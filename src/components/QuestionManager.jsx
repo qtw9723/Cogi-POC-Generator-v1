@@ -9,6 +9,9 @@ export default function QuestionManager() {
   const navigate = useNavigate()
   const { questions, loading, error: fetchError, createQuestion, updateQuestion, deleteQuestion, refetch } = useQuestions()
 
+  // Debug: Track renders
+  console.log('[QuestionManager] Rendering, isAdmin=', isAdmin)
+
   const [show, setShow] = useState(false)
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState({ text: '', input_type: INPUT_TYPES.TEXT, is_required: true, options: [], order_index: 0 })

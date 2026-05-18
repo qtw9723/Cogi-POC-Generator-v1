@@ -8,7 +8,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('[useAuth] useEffect running, checking token...')
     const token = localStorage.getItem('adminToken')
+    console.log('[useAuth] Token found:', !!token)
     setIsAdmin(!!token)
     setLoading(false)
   }, [])

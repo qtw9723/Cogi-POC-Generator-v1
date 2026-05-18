@@ -7,6 +7,9 @@ export default function App() {
 
   const isAdminRoute = location.pathname.startsWith('/admin')
 
+  // Debug: Track renders
+  console.log('[App] Rendering, isAdmin=', isAdmin, 'location=', location.pathname)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
