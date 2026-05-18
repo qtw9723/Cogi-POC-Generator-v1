@@ -32,10 +32,10 @@ export function useReferences() {
   }, [request])
 
   useEffect(() => {
-    if (hasLoadedRef.current) return
+    if (hasLoadedRef.current === true) return
     hasLoadedRef.current = true
     fetchReferences()
-  }, [])
+  }, [fetchReferences, request])
 
   const uploadReference = async (name, jsonData) => {
     const data = await request(API_ENDPOINTS.ADMIN_REFERENCES, {

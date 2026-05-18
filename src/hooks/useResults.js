@@ -26,10 +26,10 @@ export function useResults() {
   }, [request])
 
   useEffect(() => {
-    if (hasLoadedRef.current) return
+    if (hasLoadedRef.current === true) return
     hasLoadedRef.current = true
     fetchResults()
-  }, [])
+  }, [fetchResults, request])
 
   const getResultById = async (id) => {
     return await request(API_ENDPOINTS.RESULT_DETAIL(id))

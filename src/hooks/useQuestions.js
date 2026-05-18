@@ -26,11 +26,12 @@ export function useQuestions() {
   }, [request])
 
   useEffect(() => {
-    if (hasLoadedRef.current) return
+    // Prevent multiple calls using ref
+    if (hasLoadedRef.current === true) return
     hasLoadedRef.current = true
-    console.log('[useQuestions] Fetching questions...')
+
     fetchQuestions()
-  }, [])
+  }, [fetchQuestions, request])
 
   const createQuestion = async (question) => {
     const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS, {
