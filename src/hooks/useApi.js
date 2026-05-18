@@ -7,8 +7,9 @@ export function useApi() {
   const request = useCallback(async (endpoint, options = {}) => {
     setLoading(true)
     setError(null)
+    const { method = 'GET', body = null } = options
+    console.log(`[useApi] ${method} ${endpoint}`)
     try {
-      const { method = 'GET', body = null } = options
       const adminToken = localStorage.getItem('adminToken')
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       const token = adminToken || anonKey

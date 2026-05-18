@@ -28,6 +28,7 @@ export function useQuestions() {
   useEffect(() => {
     if (hasLoadedRef.current) return
     hasLoadedRef.current = true
+    console.log('[useQuestions] Fetching questions...')
     fetchQuestions()
   }, [fetchQuestions])
 
