@@ -8,14 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req: Request) => {
-  // RADICAL TEST: Return a unique response to verify deployment
-  if (req.url.includes("test")) {
-    return new Response(JSON.stringify({ testResponse: "deployment works v3" }), {
-      headers: { "Content-Type": "application/json" },
-      status: 200,
-    })
-  }
-
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
@@ -27,59 +19,114 @@ serve(async (req: Request) => {
 
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     if (req.method === "GET") {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
       const { data, error } = await supabase
         .from("questions")
         .select("*")
         .order("order_index", { ascending: true })
-      if (error) throw error
+
+      if (error) {
+        console.error("[admin-questions] GET error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       })
     }
 
-    // Use service role key for all write operations (temporarily no auth check)
-    console.log("[admin-questions] Creating supabase client with service key")
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
     if (req.method === "POST") {
       const body = await req.json()
-      console.log("[admin-questions] Inserting question:", body)
+
+      if (!body.text) {
+        return new Response(JSON.stringify({ error: "text is required" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        })
+      }
+
       const { data, error } = await supabase
         .from("questions")
         .insert([body])
         .select()
+
       if (error) {
-        console.error("[admin-questions] Insert error:", error)
-        throw error
+        console.error("[admin-questions] POST error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
       }
-      console.log("[admin-questions] Insert successful")
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 201,
       })
     }
 
-    if (req.method === "PATCH" && id) {
+    if (req.method === "PATCH") {
+      if (!id) {
+        return new Response(JSON.stringify({ error: "id query parameter is required" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        })
+      }
+
       const body = await req.json()
       const { data, error } = await supabase
         .from("questions")
         .update(body)
         .eq("id", id)
         .select()
-      if (error) throw error
-      return new Response(JSON.stringify(data), {
+
+      if (error) {
+        console.error("[admin-questions] PATCH error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
+
+      if (!data || data.length === 0) {
+        return new Response(JSON.stringify({ error: "Question not found" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404,
+        })
+      }
+
+      return new Response(JSON.stringify(data[0]), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       })
     }
 
-    if (req.method === "DELETE" && id) {
-      const { error } = await supabase.from("questions").delete().eq("id", id)
-      if (error) throw error
+    if (req.method === "DELETE") {
+      if (!id) {
+        return new Response(JSON.stringify({ error: "id query parameter is required" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        })
+      }
+
+      const { error } = await supabase
+        .from("questions")
+        .delete()
+        .eq("id", id)
+
+      if (error) {
+        console.error("[admin-questions] DELETE error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
+
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -91,7 +138,7 @@ serve(async (req: Request) => {
       status: 405,
     })
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("[admin-questions] Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

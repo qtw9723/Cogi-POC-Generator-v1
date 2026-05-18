@@ -7,17 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 }
 
-const verifyToken = (authHeader: string | null): boolean => {
-  if (!authHeader) return false
-  try {
-    const token = authHeader.replace("Bearer ", "")
-    const decoded = JSON.parse(atob(token))
-    return decoded.role === "master"
-  } catch {
-    return false
-  }
-}
-
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
@@ -25,8 +14,8 @@ serve(async (req: Request) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
@@ -38,7 +27,21 @@ serve(async (req: Request) => {
           .select("*")
           .eq("id", id)
           .single()
-        if (error) throw error
+
+        if (error) {
+          console.error("[results] GET single error:", error)
+          if (error.code === "PGRST116") {
+            return new Response(JSON.stringify({ error: "Result not found" }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 404,
+            })
+          }
+          return new Response(JSON.stringify({ error: error.message }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          })
+        }
+
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
@@ -48,7 +51,15 @@ serve(async (req: Request) => {
           .from("cogi_results")
           .select("*")
           .order("created_at", { ascending: false })
-        if (error) throw error
+
+        if (error) {
+          console.error("[results] GET list error:", error)
+          return new Response(JSON.stringify({ error: error.message }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          })
+        }
+
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
@@ -56,23 +67,26 @@ serve(async (req: Request) => {
       }
     }
 
-    if (req.method === "DELETE" && id) {
-      const token = req.headers.get("authorization")
-      if (!verifyToken(token)) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    if (req.method === "DELETE") {
+      if (!id) {
+        return new Response(JSON.stringify({ error: "id query parameter is required" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
+          status: 400,
         })
       }
 
-      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
-
-      const { error } = await supabaseAdmin
+      const { error } = await supabase
         .from("cogi_results")
         .delete()
         .eq("id", id)
-      if (error) throw error
+
+      if (error) {
+        console.error("[results] DELETE error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -85,7 +99,7 @@ serve(async (req: Request) => {
       status: 405,
     })
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("[results] Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

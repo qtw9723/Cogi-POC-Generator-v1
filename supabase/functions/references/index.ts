@@ -12,29 +12,37 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders })
   }
 
+  if (req.method !== "GET") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 405,
+    })
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    if (req.method === "GET") {
-      const { data, error } = await supabase
-        .from("cogi_references")
-        .select("*")
-        .order("created_at", { ascending: false })
-      if (error) throw error
-      return new Response(JSON.stringify(data), {
+    const { data, error } = await supabase
+      .from("cogi_references")
+      .select("*")
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("[references] Error:", error)
+      return new Response(JSON.stringify({ error: error.message }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 500,
       })
     }
 
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 405,
+      status: 200,
     })
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("[references] Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

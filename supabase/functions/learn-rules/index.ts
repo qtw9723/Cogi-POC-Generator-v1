@@ -4,18 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-admin-token",
-}
-
-const verifyAdminToken = (headers: Headers): boolean => {
-  const adminToken = headers.get("x-admin-token")
-  if (!adminToken) return false
-  try {
-    const decoded = JSON.parse(atob(adminToken))
-    return decoded.role === "master"
-  } catch {
-    return false
-  }
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 }
 
 serve(async (req: Request) => {
@@ -23,16 +12,23 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders })
   }
 
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 405,
+    })
+  }
+
   try {
-    if (!req.headers.get("x-admin-token")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    const body = await req.json()
+    const { reference_id } = body
+
+    if (!reference_id) {
+      return new Response(JSON.stringify({ error: "reference_id is required" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
+        status: 400,
       })
     }
-
-    const { reference_id } = await req.json()
-    if (!reference_id) throw new Error("reference_id required")
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -46,7 +42,13 @@ serve(async (req: Request) => {
       .eq("id", reference_id)
       .single()
 
-    if (refError || !reference) throw new Error("Reference not found")
+    if (refError || !reference) {
+      console.error("[learn-rules] Reference not found:", refError)
+      return new Response(JSON.stringify({ error: "Reference not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      })
+    }
 
     const prompt = `Analyze this JSON structure and create a template mapping for data generation:
 
@@ -89,8 +91,8 @@ Return ONLY a JSON object with this structure:
       if (jsonMatch) {
         template = JSON.parse(jsonMatch[0])
       }
-    } catch {
-      console.error("Failed to parse Gemini response")
+    } catch (e) {
+      console.error("[learn-rules] Failed to parse Gemini response:", e.message)
     }
 
     const { data, error } = await supabase
@@ -102,14 +104,20 @@ Return ONLY a JSON object with this structure:
       .eq("id", reference_id)
       .select()
 
-    if (error) throw error
+    if (error) {
+      console.error("[learn-rules] Update error:", error)
+      return new Response(JSON.stringify({ error: error.message }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      })
+    }
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(data[0]), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     })
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("[learn-rules] Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

@@ -12,6 +12,13 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders })
   }
 
+  if (req.method !== "GET") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 405,
+    })
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!
@@ -24,7 +31,11 @@ serve(async (req: Request) => {
       .order("order_index", { ascending: true })
 
     if (error) {
-      throw error
+      console.error("[questions] Error:", error)
+      return new Response(JSON.stringify({ error: error.message }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      })
     }
 
     return new Response(JSON.stringify(questions), {
@@ -32,7 +43,7 @@ serve(async (req: Request) => {
       status: 200,
     })
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("[questions] Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

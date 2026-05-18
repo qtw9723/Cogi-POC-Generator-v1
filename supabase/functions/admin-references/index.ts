@@ -4,18 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-admin-token",
-}
-
-const verifyAdminToken = (headers: Headers): boolean => {
-  const adminToken = headers.get("x-admin-token")
-  if (!adminToken) return false
-  try {
-    const decoded = JSON.parse(atob(adminToken))
-    return decoded.role === "master"
-  } catch {
-    return false
-  }
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 }
 
 serve(async (req: Request) => {
@@ -30,33 +19,41 @@ serve(async (req: Request) => {
 
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     if (req.method === "GET") {
-      // GET은 인증 불필요 (public read) - anonKey 사용
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
       const { data, error } = await supabase
         .from("cogi_references")
         .select("*")
         .order("created_at", { ascending: false })
-      if (error) throw error
+
+      if (error) {
+        console.error("[admin-references] GET error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       })
     }
 
-    // POST/DELETE는 인증 필요 (x-admin-token 헤더 사용)
-    if (!req.headers.get("x-admin-token")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
     if (req.method === "POST") {
       const body = await req.json()
+
+      if (!body.name || !body.json_data) {
+        return new Response(
+          JSON.stringify({ error: "name and json_data are required" }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          }
+        )
+      }
+
       const { data, error } = await supabase
         .from("cogi_references")
         .insert([
@@ -67,19 +64,42 @@ serve(async (req: Request) => {
           },
         ])
         .select()
-      if (error) throw error
+
+      if (error) {
+        console.error("[admin-references] POST error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 201,
       })
     }
 
-    if (req.method === "DELETE" && id) {
+    if (req.method === "DELETE") {
+      if (!id) {
+        return new Response(JSON.stringify({ error: "id query parameter is required" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        })
+      }
+
       const { error } = await supabase
         .from("cogi_references")
         .delete()
         .eq("id", id)
-      if (error) throw error
+
+      if (error) {
+        console.error("[admin-references] DELETE error:", error)
+        return new Response(JSON.stringify({ error: error.message }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        })
+      }
+
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -91,7 +111,7 @@ serve(async (req: Request) => {
       status: 405,
     })
   } catch (error) {
-    console.error("Error:", error.message)
+    console.error("[admin-references] Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
