@@ -6,7 +6,6 @@ import { useResults } from '../hooks/useResults'
 export default function QuestionnaireForm() {
   const { questions, loading: qLoading } = useQuestions()
   const { createResult, loading: gLoading } = useResults()
-  const { request } = useApi()
   const navigate = useNavigate()
 
   const [references, setReferences] = useState([])
