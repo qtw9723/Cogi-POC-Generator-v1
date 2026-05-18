@@ -25,14 +25,15 @@ serve(async (req: Request) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
 
     if (req.method === "GET") {
-      // GET은 인증 불필요 (public read)
+      // GET은 인증 불필요 (public read) - anonKey 사용
+      const supabase = createClient(supabaseUrl, supabaseAnonKey)
       const { data, error } = await supabase
         .from("questions")
         .select("*")
@@ -52,6 +53,8 @@ serve(async (req: Request) => {
         status: 401,
       })
     }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     if (req.method === "POST") {
       const body = await req.json()
