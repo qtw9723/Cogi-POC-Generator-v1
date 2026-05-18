@@ -16,7 +16,7 @@ export default function ReferenceManager() {
 
   useEffect(() => {
     if (!isAdmin) navigate('/admin')
-  }, [isAdmin, navigate])
+  }, [isAdmin])
 
   const handleUpload = async (e) => {
     e.preventDefault()

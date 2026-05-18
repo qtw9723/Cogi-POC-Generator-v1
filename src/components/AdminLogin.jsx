@@ -11,7 +11,7 @@ export default function AdminLogin() {
 
   useEffect(() => {
     if (!loading && isAdmin) navigate('/admin/questions')
-  }, [isAdmin, loading, navigate])
+  }, [isAdmin, loading])
 
   const handleSubmit = (e) => {
     e.preventDefault()
