@@ -30,7 +30,7 @@ export function useQuestions() {
     hasLoadedRef.current = true
     console.log('[useQuestions] Fetching questions...')
     fetchQuestions()
-  }, [fetchQuestions])
+  }, [])
 
   const createQuestion = async (question) => {
     const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS, {

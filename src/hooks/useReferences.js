@@ -35,7 +35,7 @@ export function useReferences() {
     if (hasLoadedRef.current) return
     hasLoadedRef.current = true
     fetchReferences()
-  }, [fetchReferences])
+  }, [])
 
   const uploadReference = async (name, jsonData) => {
     const data = await request(API_ENDPOINTS.ADMIN_REFERENCES, {

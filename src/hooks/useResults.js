@@ -29,7 +29,7 @@ export function useResults() {
     if (hasLoadedRef.current) return
     hasLoadedRef.current = true
     fetchResults()
-  }, [fetchResults])
+  }, [])
 
   const getResultById = async (id) => {
     return await request(API_ENDPOINTS.RESULT_DETAIL(id))
