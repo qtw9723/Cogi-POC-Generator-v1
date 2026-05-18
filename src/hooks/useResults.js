@@ -10,14 +10,16 @@ export function useResults() {
   const hasLoadedRef = useRef(false)
 
   const fetchResults = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setLoading(true)
-      setError(null)
       const data = await request(API_ENDPOINTS.RESULTS)
       setResults(data)
+      setError(null)
     } catch (err) {
       console.error('Failed to fetch results:', err)
       setError(err.message)
+      setResults([])
     } finally {
       setLoading(false)
     }

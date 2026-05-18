@@ -10,11 +10,12 @@ export function useReferences() {
   const hasLoadedRef = useRef(false)
 
   const fetchReferences = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setLoading(true)
-      setError(null)
       const data = await request(API_ENDPOINTS.ADMIN_REFERENCES)
       setReferences(data)
+      setError(null)
     } catch (err) {
       // If unauthorized (not admin), silently fail - references are optional for non-admin users
       if (err.message.includes('Unauthorized') || err.message.includes('401')) {
@@ -24,6 +25,7 @@ export function useReferences() {
         console.error('Failed to fetch references:', err)
         setError(err.message)
       }
+      setReferences([])
     } finally {
       setLoading(false)
     }

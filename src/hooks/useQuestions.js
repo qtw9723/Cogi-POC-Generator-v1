@@ -10,14 +10,16 @@ export function useQuestions() {
   const hasLoadedRef = useRef(false)
 
   const fetchQuestions = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setLoading(true)
-      setError(null)
       const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS)
       setQuestions(data)
+      setError(null)
     } catch (err) {
       console.error('Failed to fetch questions:', err)
       setError(err.message)
+      setQuestions([])
     } finally {
       setLoading(false)
     }
