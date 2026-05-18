@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../context/AuthContext'
 
 export default function AdminLogin() {
   const [id, setId] = useState('')
@@ -11,7 +11,7 @@ export default function AdminLogin() {
 
   useEffect(() => {
     if (isAdmin) navigate('/admin/questions')
-  }, [isAdmin, navigate])
+  }, [isAdmin])
 
   const handleSubmit = (e) => {
     e.preventDefault()
