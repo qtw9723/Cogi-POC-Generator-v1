@@ -12,15 +12,11 @@ export function useApi() {
     try {
       const adminToken = localStorage.getItem('adminToken')
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      const token = method === 'GET' ? anonKey : (adminToken || anonKey)
 
       const headers = {
-        'Content-Type': 'application/json'
-      }
-
-      // GET 요청이 아닐 때만 Authorization 헤더 추가
-      if (method !== 'GET') {
-        const token = adminToken || anonKey
-        headers['Authorization'] = `Bearer ${token}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       }
 
       const response = await fetch(endpoint, {
