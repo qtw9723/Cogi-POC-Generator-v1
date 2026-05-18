@@ -4,14 +4,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-admin-token",
 }
 
-const verifyToken = (authHeader: string | null): boolean => {
-  if (!authHeader) return false
+const verifyAdminToken = (headers: Headers): boolean => {
+  const adminToken = headers.get("x-admin-token")
+  if (!adminToken) return false
   try {
-    const token = authHeader.replace("Bearer ", "")
-    const decoded = JSON.parse(atob(token))
+    const decoded = JSON.parse(atob(adminToken))
     return decoded.role === "master"
   } catch {
     return false
@@ -24,8 +24,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const token = req.headers.get("authorization")
-    if (!verifyToken(token)) {
+    if (!verifyAdminToken(req.headers)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,

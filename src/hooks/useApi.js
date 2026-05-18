@@ -13,19 +13,29 @@ export function useApi() {
       const adminToken = localStorage.getItem('adminToken')
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       console.log(`[useApi] adminToken exists: ${!!adminToken}, length: ${adminToken?.length || 0}`)
-      console.log(`[useApi] Using token for ${method}:`, adminToken ? `adminToken (length: ${adminToken.length})` : 'anonKey')
-      const token = method === 'GET' ? anonKey : (adminToken || anonKey)
 
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       }
-      console.log(`[useApi] Authorization header: Bearer ${token?.substring(0, 20)}...`)
-      try {
-        const decoded = JSON.parse(atob(token))
-        console.log(`[useApi] Decoded token:`, decoded)
-      } catch (e) {
-        console.log(`[useApi] Failed to decode token:`, e.message)
+
+      // GET 요청: Authorization 헤더 사용 (anonKey)
+      // POST/PATCH/DELETE: x-admin-token 헤더 사용 (adminToken)
+      if (method === 'GET') {
+        headers['Authorization'] = `Bearer ${anonKey}`
+        console.log(`[useApi] Using anonKey for GET request`)
+      } else {
+        if (adminToken) {
+          headers['x-admin-token'] = adminToken
+          console.log(`[useApi] Using x-admin-token for ${method} request`)
+          try {
+            const decoded = JSON.parse(atob(adminToken))
+            console.log(`[useApi] Decoded admin token:`, decoded)
+          } catch (e) {
+            console.log(`[useApi] Failed to decode admin token:`, e.message)
+          }
+        } else {
+          console.warn(`[useApi] No adminToken found for ${method} request`)
+        }
       }
 
       const response = await fetch(endpoint, {

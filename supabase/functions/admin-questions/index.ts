@@ -4,14 +4,27 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-admin-token",
 }
 
 const verifyToken = (authHeader: string | null): boolean => {
   if (!authHeader) return false
   try {
+    // Authorization: Bearer <token> 형식에서 토큰 추출
     const token = authHeader.replace("Bearer ", "")
     const decoded = JSON.parse(atob(token))
+    return decoded.role === "master"
+  } catch {
+    return false
+  }
+}
+
+const verifyAdminToken = (headers: Headers): boolean => {
+  // x-admin-token 헤더 사용 (Supabase JWT 검증 우회)
+  const adminToken = headers.get("x-admin-token")
+  if (!adminToken) return false
+  try {
+    const decoded = JSON.parse(atob(adminToken))
     return decoded.role === "master"
   } catch {
     return false
@@ -45,9 +58,8 @@ serve(async (req: Request) => {
       })
     }
 
-    // POST/PATCH/DELETE는 인증 필요
-    const token = req.headers.get("authorization")
-    if (!verifyToken(token)) {
+    // POST/PATCH/DELETE는 인증 필요 (x-admin-token 헤더 사용)
+    if (!verifyAdminToken(req.headers)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
