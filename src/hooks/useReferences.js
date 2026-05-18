@@ -5,6 +5,7 @@ import { API_ENDPOINTS } from '../lib/constants'
 export function useReferences() {
   const [references, setReferences] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { request } = useApi()
 
   useEffect(() => {
@@ -13,14 +14,18 @@ export function useReferences() {
 
   const fetchReferences = async () => {
     try {
+      setLoading(true)
+      setError(null)
       const data = await request(API_ENDPOINTS.ADMIN_REFERENCES)
       setReferences(data)
     } catch (err) {
       // If unauthorized (not admin), silently fail - references are optional for non-admin users
       if (err.message.includes('Unauthorized') || err.message.includes('401')) {
         console.log('Admin references not available (not authenticated)')
+        setError(null)
       } else {
         console.error('Failed to fetch references:', err)
+        setError(err.message)
       }
     } finally {
       setLoading(false)
@@ -52,5 +57,5 @@ export function useReferences() {
     setReferences(references.filter(r => r.id !== id))
   }
 
-  return { references, loading, uploadReference, learnRules, deleteReference, refetch: fetchReferences }
+  return { references, loading, error, uploadReference, learnRules, deleteReference, refetch: fetchReferences }
 }

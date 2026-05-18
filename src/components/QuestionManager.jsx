@@ -7,7 +7,7 @@ import { INPUT_TYPES } from '../lib/constants'
 export default function QuestionManager() {
   const { isAdmin, logout } = useAuth()
   const navigate = useNavigate()
-  const { questions, createQuestion, updateQuestion, deleteQuestion } = useQuestions()
+  const { questions, loading, error: fetchError, createQuestion, updateQuestion, deleteQuestion, refetch } = useQuestions()
 
   const [show, setShow] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -48,9 +48,16 @@ export default function QuestionManager() {
         <button onClick={() => { logout(); navigate('/admin') }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">로그아웃</button>
       </div>
 
+      {fetchError && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded text-red-700 mb-6 flex justify-between items-center">
+          <span>{fetchError}</span>
+          <button onClick={() => refetch()} className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">다시 시도</button>
+        </div>
+      )}
+
       {error && <div className="p-4 bg-red-50 border border-red-200 rounded text-red-700 mb-6">{error}</div>}
 
-      {!show && <button onClick={() => setShow(true)} className="mb-6 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">+ 질문 추가</button>}
+      {!loading && !fetchError && !show && <button onClick={() => setShow(true)} className="mb-6 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">+ 질문 추가</button>}
 
       {show && (
         <form onSubmit={handleSubmit} className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8 space-y-4">
@@ -86,8 +93,11 @@ export default function QuestionManager() {
         </form>
       )}
 
-      <div className="space-y-3">
-        {questions.map(q => (
+      {loading ? (
+        <div className="text-center py-12">로딩 중...</div>
+      ) : (
+        <div className="space-y-3">
+          {questions.map(q => (
           <div key={q.id} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
             <div>
               <p className="font-semibold">{q.text}</p>
@@ -98,8 +108,9 @@ export default function QuestionManager() {
               <button onClick={() => { if (window.confirm('삭제?')) deleteQuestion(q.id) }} className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">삭제</button>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -6,7 +6,7 @@ import { useReferences } from '../hooks/useReferences'
 export default function ReferenceManager() {
   const { isAdmin, logout } = useAuth()
   const navigate = useNavigate()
-  const { references, loading, uploadReference, learnRules, deleteReference } = useReferences()
+  const { references, loading, error: fetchError, uploadReference, learnRules, deleteReference, refetch } = useReferences()
 
   const [show, setShow] = useState(false)
   const [file, setFile] = useState(null)
@@ -69,9 +69,16 @@ export default function ReferenceManager() {
         <button onClick={() => { logout(); navigate('/admin') }} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">로그아웃</button>
       </div>
 
+      {fetchError && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded text-red-700 mb-6 flex justify-between items-center">
+          <span>{fetchError}</span>
+          <button onClick={() => refetch()} className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">다시 시도</button>
+        </div>
+      )}
+
       {error && <div className="p-4 bg-red-50 border border-red-200 rounded text-red-700 mb-6">{error}</div>}
 
-      {!show && <button onClick={() => setShow(true)} className="mb-6 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">+ 업로드</button>}
+      {!loading && !fetchError && !show && <button onClick={() => setShow(true)} className="mb-6 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">+ 업로드</button>}
 
       {show && (
         <form onSubmit={handleUpload} className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8 space-y-4">
@@ -93,7 +100,9 @@ export default function ReferenceManager() {
         </form>
       )}
 
-      {loading ? <div className="text-center py-12">로딩...</div> : (
+      {loading && !fetchError ? (
+        <div className="text-center py-12">로딩 중...</div>
+      ) : (
         <div className="space-y-3">
           {references.map(ref => (
             <div key={ref.id} className="border border-gray-200 rounded-lg p-4">

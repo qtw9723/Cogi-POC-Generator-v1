@@ -5,6 +5,7 @@ import { API_ENDPOINTS } from '../lib/constants'
 export function useQuestions() {
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { request } = useApi()
 
   useEffect(() => {
@@ -13,10 +14,13 @@ export function useQuestions() {
 
   const fetchQuestions = async () => {
     try {
+      setLoading(true)
+      setError(null)
       const data = await request(API_ENDPOINTS.ADMIN_QUESTIONS)
       setQuestions(data)
     } catch (err) {
       console.error('Failed to fetch questions:', err)
+      setError(err.message)
     } finally {
       setLoading(false)
     }
@@ -47,5 +51,5 @@ export function useQuestions() {
     setQuestions(questions.filter(q => q.id !== id))
   }
 
-  return { questions, loading, createQuestion, updateQuestion, deleteQuestion, refetch: fetchQuestions }
+  return { questions, loading, error, createQuestion, updateQuestion, deleteQuestion, refetch: fetchQuestions }
 }
