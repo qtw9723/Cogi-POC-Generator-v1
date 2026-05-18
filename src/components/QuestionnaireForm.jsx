@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuestions } from '../hooks/useQuestions'
 import { useResults } from '../hooks/useResults'
-import { useApi } from '../hooks/useApi'
-import { API_ENDPOINTS } from '../lib/constants'
 
 export default function QuestionnaireForm() {
   const { questions, loading: qLoading } = useQuestions()
@@ -23,7 +21,19 @@ export default function QuestionnaireForm() {
 
   const fetchReferences = async () => {
     try {
-      const data = await request(API_ENDPOINTS.ADMIN_REFERENCES)
+      // 공개 references 엔드포인트 사용
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      const response = await fetch(`${baseUrl}/functions/v1/references`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${anonKey}`
+        }
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const data = await response.json()
       setReferences(data)
     } catch (err) {
       // 실패해도 빈 배열로 계속 진행
