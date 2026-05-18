@@ -13,14 +13,15 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Router>
-      <App />
       <Routes>
-        <Route path="/" element={<QuestionnaireForm />} />
-        <Route path="/results" element={<ResultList />} />
-        <Route path="/results/:id" element={<ResultDetail />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/questions" element={<QuestionManager />} />
-        <Route path="/admin/references" element={<ReferenceManager />} />
+        <Route element={<App />}>
+          <Route path="/" element={<QuestionnaireForm />} />
+          <Route path="/results" element={<ResultList />} />
+          <Route path="/results/:id" element={<ResultDetail />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/questions" element={<QuestionManager />} />
+          <Route path="/admin/references" element={<ReferenceManager />} />
+        </Route>
       </Routes>
     </Router>
   </React.StrictMode>
