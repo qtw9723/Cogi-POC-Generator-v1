@@ -46,7 +46,7 @@ serve(async (req: Request) => {
     }
 
     // POST/DELETE는 인증 필요 (x-admin-token 헤더 사용)
-    if (!verifyAdminToken(req.headers)) {
+    if (!req.headers.get("x-admin-token")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,

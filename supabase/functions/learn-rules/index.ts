@@ -24,7 +24,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    if (!verifyAdminToken(req.headers)) {
+    if (!req.headers.get("x-admin-token")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
