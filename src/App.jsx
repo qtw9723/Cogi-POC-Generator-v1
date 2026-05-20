@@ -1,51 +1,65 @@
-import { Link, useLocation, Outlet, Navigate } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { QuestionsProvider } from './context/QuestionsContext'
+import { ReferencesProvider } from './context/ReferencesContext'
+import { ResultsProvider } from './context/ResultsContext'
+import { Header } from './components/layout/Header'
+import QuestionnaireForm from './components/questionnaire/QuestionnaireForm'
+import ResultsList from './components/results/ResultsList'
+import ResultDetail from './components/ResultDetail'
+import AdminLogin from './components/AdminLogin'
+import QuestionManager from './components/QuestionManager'
+import ReferenceManager from './components/ReferenceManager'
 
-export default function App() {
-  const { isAdmin, loading, logout } = useAuth()
-  const location = useLocation()
+const ProtectedRoute = ({ element }) => {
+  const { isAuthenticated } = useAuth()
+  return isAuthenticated ? element : <Navigate to="/admin/login" replace />
+}
 
-  const isAdminRoute = location.pathname.startsWith('/admin')
-
-  // Debug: Track renders
-  console.log('[App] Rendering, isAdmin=', isAdmin, 'location=', location.pathname)
-
-  // Redirect to /admin if trying to access admin routes without auth
-  if (isAdminRoute && !loading && !isAdmin && location.pathname !== '/admin') {
-    return <Navigate to="/admin" replace />
-  }
-
-  // Redirect to questions page if already authenticated and accessing login page
-  if (location.pathname === '/admin' && !loading && isAdmin) {
-    return <Navigate to="/admin/questions" replace />
-  }
+const AppContent = () => {
+  const { isAuthenticated } = useAuth()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-blue-600">
-            Cogi POC
-          </Link>
-          <div className="space-x-4">
-            <Link to="/" className="text-gray-600 hover:text-blue-600">생성기</Link>
-            <Link to="/results" className="text-gray-600 hover:text-blue-600">결과</Link>
-            {!isAdmin && (
-              <Link to="/admin" className="text-gray-600 hover:text-blue-600">어드민</Link>
-            )}
-            {isAdmin && (
-              <>
-                <Link to="/admin/questions" className="text-gray-600 hover:text-blue-600">질문</Link>
-                <Link to="/admin/references" className="text-gray-600 hover:text-blue-600">레퍼런스</Link>
-                <button onClick={() => { logout(); window.location.href = '/' }} className="text-red-600 hover:text-red-700">로그아웃</button>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
-      <main>
-        <Outlet />
+    <>
+      <Header />
+      <main className="min-h-screen bg-neutral-bg">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<QuestionnaireForm />} />
+          <Route path="/results" element={<ResultsList />} />
+          <Route path="/results/:id" element={<ResultDetail />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={isAuthenticated ? <Navigate to="/admin/questions" /> : <AdminLogin />} />
+          <Route
+            path="/admin/questions"
+            element={<ProtectedRoute element={<QuestionManager />} />}
+          />
+          <Route
+            path="/admin/references"
+            element={<ProtectedRoute element={<ReferenceManager />} />}
+          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-    </div>
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <QuestionsProvider>
+          <ReferencesProvider>
+            <ResultsProvider>
+              <AppContent />
+            </ResultsProvider>
+          </ReferencesProvider>
+        </QuestionsProvider>
+      </AuthProvider>
+    </Router>
   )
 }
