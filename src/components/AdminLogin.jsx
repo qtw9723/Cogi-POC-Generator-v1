@@ -1,45 +1,81 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { Card } from './common/Card'
+import { Button } from './common/Button'
+import { FormInput } from './common/FormInput'
 
-export default function AdminLogin() {
-  const [id, setId] = useState('')
-  const [pw, setPw] = useState('')
-  const [error, setError] = useState('')
-  const { login } = useAuth()
+export const AdminLogin = () => {
   const navigate = useNavigate()
+  const { login } = useAuth()
+  const [token, setToken] = useState('')
+  const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
-    if (login(id, pw)) {
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      await login(token)
       navigate('/admin/questions')
-    } else {
-      setError('아이디/비밀번호 오류')
+    } catch (err) {
+      setError('로그인 토큰이 유효하지 않습니다')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">어드민 로그인</h1>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <Card className="p-8">
+          <h1 className="text-h2 text-primary-500 mb-2 text-center">관리자 로그인</h1>
+          <p className="text-small text-neutral-text-secondary text-center mb-8">
+            관리자 토큰을 입력하여 관리 페이지에 접근하세요
+          </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold mb-2">아이디</label>
-            <input type="text" value={id} onChange={(e) => setId(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="master" />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <FormInput
+              type="password"
+              label="관리자 토큰"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="토큰을 입력해주세요"
+              required
+              error={error}
+            />
 
-          <div>
-            <label className="block text-sm font-semibold mb-2">비밀번호</label>
-            <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="master" />
-          </div>
+            {error && (
+              <div className="p-4 bg-semantic-error/10 border border-semantic-error rounded-base text-semantic-error text-small">
+                {error}
+              </div>
+            )}
 
-          {error && <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{error}</div>}
+            <Button
+              type="submit"
+              variant="primary"
+              size="full"
+              disabled={isLoading || !token}
+            >
+              {isLoading ? '로그인 중...' : '로그인'}
+            </Button>
+          </form>
 
-          <button type="submit" className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">로그인</button>
-        </form>
+          <p className="text-small text-neutral-text-secondary text-center mt-6">
+            토큰이 없으신가요?{' '}
+            <button
+              onClick={() => navigate('/')}
+              className="text-accent-500 hover:text-accent-600 font-medium"
+            >
+              설문 작성하기
+            </button>
+          </p>
+        </Card>
       </div>
     </div>
   )
 }
+
+export default AdminLogin
