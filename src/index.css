@@ -30,3 +30,37 @@ button {
 html {
   overflow-y: scroll;
 }
+
+/* Transitions */
+button, input, textarea, select, a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid #0074D9;
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling (webkit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d0d4d9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b4b9;
+}
